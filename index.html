@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertical Stress Contours</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid black;
+            transform: scaleY(-1); /* Mirror canvas vertically */
+        }
+    </style>
+</head>
+<body>
+<canvas id="contourCanvas" width="800" height="600"></canvas>
+
+<script src="./points.js"></script>
+<script src="./script.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@ module CE366VerticalStress
 go 1.21
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/xuri/excelize/v2 v2.8.1
 )
