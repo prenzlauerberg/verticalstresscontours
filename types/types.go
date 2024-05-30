@@ -11,6 +11,16 @@ var (
 	AllowedDeviation float64   = 0.0002
 )
 
+type RequestParameters struct {
+	Q string `json:"q" xml:"q" form:"q"`
+	B string `json:"b" xml:"b" form:"b"`
+}
+
+type Parameters struct {
+	Q float64
+	B float64
+}
+
 type RelativePointInfo struct {
 	Y     float64
 	Z     float64
@@ -40,4 +50,5 @@ type Line struct {
 type Contour struct {
 	Name        string
 	Coefficient float64
+	Color       string
 }

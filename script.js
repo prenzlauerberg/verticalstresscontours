@@ -44,5 +44,15 @@ function drawContours() {
 document.addEventListener('DOMContentLoaded', (event) => {
 
     drawContours(contours);
+    axios({
+        method: 'post',
+        url: '/api/contours',
+        data: {
+            q: '10',
+            b: '15'
+        }
+    }).then(function (response) {
+        console.log(response)
+    });
 
 })

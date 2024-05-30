@@ -4,7 +4,9 @@ import (
 	"CE366VerticalStress/estimation"
 	"CE366VerticalStress/types"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
@@ -24,88 +26,141 @@ func init() {
 }
 
 func main() {
-	//f := excelize.NewFile()
-	//f.SetCellValue("Sheet1", "A1", "Y")
-	//f.SetCellValue("Sheet1", "B1", "Z")
-	//f.SetCellValue("Sheet1", "C1", "Value")
 
+	app := fiber.New(fiber.Config{
+		AppName: "CE366 Vertical Stress Contours",
+	})
+
+	app.Static("/ce366", "./public")
+
+	app.Post("/api/contours", func(c *fiber.Ctx) error {
+		requestParameters := new(types.RequestParameters)
+		LineMap = make(map[string]*types.Line)
+		if err := c.BodyParser(requestParameters); err != nil {
+			return err
+		}
+		qP, err := strconv.ParseFloat(requestParameters.Q, 64)
+		if err != nil {
+			return err
+		}
+		bP, err := strconv.ParseFloat(requestParameters.B, 64)
+		if err != nil {
+			return err
+		}
+		parameters := types.Parameters{
+			Q: qP,
+			B: bP,
+		}
+		log.Info("will calculate with the following parameters", parameters)
+		jsonBytes, err := ProcessContours(parameters)
+		if err != nil {
+			return err
+		}
+		return c.JSON(string(jsonBytes))
+	})
+
+	app.Listen(":9924")
+
+}
+
+func ProcessContours(p types.Parameters) ([]byte, error) {
 	//if err := f.SaveAs("points.xlsx"); err != nil { }
 	var contours []types.Contour
 
 	// Populate the slice with Contour elements
-	for i := 1; i <= 9; i++ {
+	for i := 2; i <= 9; i++ {
 		coefficient := float64(i) / 10
 		name := "Contour-" + strconv.FormatFloat(coefficient, 'f', 1, 64)
-		contours = append(contours, types.Contour{Name: name, Coefficient: coefficient})
+		var color string
+		if i%9 == 0 {
+			color = "black"
+		} else if absInt(i-9) == 1 {
+			color = "indigo"
+		} else if absInt(i-9) == 2 {
+			color = "steelblue"
+		} else if absInt(i-9) == 3 {
+			color = "slategrey"
+		} else if absInt(i-9) == 4 {
+			color = "forestgreen"
+		} else if absInt(i-9) == 5 {
+			color = "red"
+		} else if absInt(i-9) == 6 {
+			color = "green"
+		} else if absInt(i-9) == 7 {
+			color = "midnightblue"
+		} else if absInt(i-9) == 8 {
+			color = "red"
+		}
+		contours = append(contours, types.Contour{Name: name, Coefficient: coefficient, Color: color})
 	}
 
 	// Iterate over the slice and print each element
 	for _, contour := range contours {
 		//fmt.Printf("Name: %s, Coefficient: %.1f\n", contour.Name, contour.Coefficient)
-		ProcessCurve(contour.Name, contour.Coefficient)
+		ProcessCurve(contour.Name, contour.Coefficient, p, contour.Color)
 	}
-	SaveLinesToJS()
-
+	return LineMapToJSON()
 }
 
-func ProcessCurve(name string, coeff float64) {
+func ProcessCurve(name string, coeff float64, p types.Parameters, color string) {
 	curveList := make([]*types.CurveInf, 0)
 	curve00 := types.CurveInf{Name: name, Coefficient: coeff}
 	curveList = append(curveList, &curve00)
-	est := estimation.Estimator{Q: 12, B: 10, Curves: curveList}
+	est := estimation.Estimator{Q: p.Q, B: p.B, Curves: curveList}
 	est.CalculateTheContours()
 
 	for _, curve := range est.Curves {
 		for _, dataPoint := range curve.Points {
-			SavePointToLine(curve.Name, dataPoint)
+			SavePointToLine(curve.Name, dataPoint, color)
 		}
 	}
 }
 
-func SavePointToLine(name string, point types.RelativePointInfo) {
+func SavePointToLine(name string, point types.RelativePointInfo, color string) {
 	n, ok := LineMap[name]
 	if ok {
 		point1 := types.Point{
 			X: point.Y,
-			Y: point.Z,
+			Y: point.Z * -1.0,
 		}
 		point2 := types.Point{
 			X: point.Y * -1.0,
-			Y: point.Z,
+			Y: point.Z * -1.0,
 		}
 		n.Points = append(n.Points, point1, point2)
 
 	} else {
 		LineMap[name] = &types.Line{
-			Color:  "",
+			Color:  color,
 			Name:   name,
 			Points: []types.Point{},
 		}
 		s := LineMap[name]
 		point0 := types.Point{
 			X: point.Y,
-			Y: point.Z,
+			Y: point.Z * -1.0,
 		}
 		point02 := types.Point{
 			X: point.Y * -1.0,
-			Y: point.Z,
+			Y: point.Z * -1.0,
 		}
 		s.Points = append(s.Points, point0, point02)
 	}
 }
 
-func SaveLinesToJS() {
+func LineMapToJSON() ([]byte, error) {
 	// Convert lines to JSON
 	linesJSON, err := json.Marshal(LineMap)
 	if err != nil {
 		fmt.Println("Error marshaling lines:", err)
-		return
+		return nil, errors.New(err.Error())
 	}
-	// Create and write to points.js file
+	return linesJSON, nil
+	/*// Create and write to points.js file
 	file, err := os.Create("points.js")
 	if err != nil {
 		fmt.Println("Error creating points.js file:", err)
-		return
+		return nil, errors.New( err.Error())
 	}
 	defer file.Close()
 
@@ -113,7 +168,18 @@ func SaveLinesToJS() {
 	_, err = file.WriteString(jsContent)
 	if err != nil {
 		fmt.Println("Error writing to points.js file:", err)
+		return nil, errors.New( err.Error())
 	}
+	*/
+}
 
-	fmt.Println("points.js file generated successfully")
+func absInt(x int) int {
+	return absDiffInt(x, 0)
+}
+
+func absDiffInt(x, y int) int {
+	if x < y {
+		return y - x
+	}
+	return x - y
 }

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertical Stress Contours</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid black;
+
+        }
+
+        input {
+            display: block;
+            /*margin: 2em auto;*/
+            border: none;
+            padding: 0;
+            width: 10.5ch;
+            background: repeating-linear-gradient(90deg, dimgrey 0, dimgrey 1ch, transparent 0, transparent 1.5ch) 0 100%/ 10ch 2px no-repeat;
+            font: 5ch droid sans mono, consolas, monospace;
+            letter-spacing: 0.5ch;
+        }
+        input:focus {
+            outline: none;
+            color: dodgerblue;
+        }
+        .input-block {
+            margin: 0.8em auto;
+            padding: 0.2em 0.3em;
+        }
+        .column-canvas {
+            padding-top: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            float: left;
+            width: 72.67%;
+        }
+
+        .column-input {
+            padding-top: 25px;
+            justify-content: center;
+            align-items: center;
+            float: left;
+            width: 27.33%;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="row">
+    <div class="column-canvas">
+        <canvas id="contourCanvas" width="1200" height="900"></canvas>
+    </div>
+    <div class="column-input">
+        <p>Input Parameters</p>
+        <hr>
+        <div class="input-block">
+            <label>The Uniform Pressure Q:</label>
+            <input type="number" name="q" id="inputQ" placeholder="" value="12" step="1">
+        </div>
+        <div class="input-block">
+            <label>The Width B:</label>
+            <input type="number" name="b" id="inputB" placeholder="" value="10" step="1">
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+<script src="/ce366/points.js"></script>
+<script src="/ce366/script.js"></script>
+</body>
+</html>

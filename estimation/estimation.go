@@ -3,7 +3,6 @@ package estimation
 import (
 	"CE366VerticalStress/functions"
 	"CE366VerticalStress/types"
-	"fmt"
 )
 
 type Estimator struct {
@@ -25,9 +24,9 @@ func (estimator *Estimator) CalculateTheContours() {
 		for iteration {
 			iterationIndex++
 			//fmt.Printf("iteration index %d , y is %v z is %v ,\n", iterationIndex, y, z)
-			estimated, _, found := estimator.EstimateSigmaV(goal, &y, &z, curveIndex)
+			estimated, _, _ := estimator.EstimateSigmaV(goal, &y, &z, curveIndex)
 			if estimated {
-				fmt.Printf("estimation concluded the goal is, %v , found %v , stopping iteration\n", goal, found)
+				//fmt.Printf("estimation concluded the goal is, %v , found %v , stopping iteration\n", goal, found)
 				z = z + 0.008*estimator.B
 			}
 			if estimator.sym {
